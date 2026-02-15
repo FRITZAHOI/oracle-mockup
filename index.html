@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - 3 Acts Final</title>
+    <title>Oracle - Texture Fix</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -13,7 +13,7 @@
       button { padding: 20px 40px; font-size: 20px; background: #222; color: white; border: 2px solid white; border-radius: 10px; }
       #syncButton {
         position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-        z-index: 10001; padding: 15px 30px; background: #00d4ff; color: black;
+        z-index: 10001; padding: 15px 30px; background: #00d4ff; color: #000;
         border: none; border-radius: 50px; display: none; font-weight: bold;
       }
       #logger {
@@ -24,48 +24,26 @@
   </head>
   <body>
 
-    <div id="logger">Log: Bereit</div>
+    <div id="logger">Status: Ready</div>
 
     <div id="overlay">
       <h1>Oracle du Ciel</h1>
       <button id="startButton">Performance Starten</button>
     </div>
 
-    <button id="syncButton">POLARIS IM NORDEN FIXIEREN</button>
+    <button id="syncButton">POLARIS FIXIEREN</button>
 
     <a-scene>
-      <a-assets>
-        <img id="skyClean" src="stars_clean.jpg">
-        <img id="skyLines" src="stars_lines.jpg">
-        </a-assets>
+      <a-assets timeout="10000">
+        <img id="skyClean" src="stars_clean.jpg" crossorigin="anonymous">
+        <img id="skyLines" src="stars_lines.jpg" crossorigin="anonymous">
+      </a-assets>
 
-      <a-sky id="sky" color="#111" rotation="0 0 0"></a-sky>
-
-      <a-entity id="debugDots">
-        <a-sphere position="10 0 -15" radius="0.2" color="red"></a-sphere>
-        <a-sphere position="-10 5 -15" radius="0.2" color="blue"></a-sphere>
-      </a-entity>
+      <a-sky id="sky" color="#050505" rotation="0 0 0"></a-sky>
 
       <a-entity id="polarstern-anchor" rotation="48.16 -70.15 0">
-        <a-sphere 
-          id="polarstern-sphere" class="interaktiv" position="0 0 -20" 
-          radius="0.4" color="#00d4ff" visible="false"
-          material="emissive: #00d4ff; emissiveIntensity: 5">
-        </a-sphere>
-
-        <a-text 
-          id="polarText" value="POLARIS" position="0 1.5 -20" 
-          rotation="0 180 0" align="center" width="8" color="#00d4ff" 
-          visible="false" side="double">
-        </a-text>
-
-        <a-entity id="oracle-panel" position="0 5 -20" rotation="0 180 0" visible="false">
-          <a-plane width="10" height="4" color="#000" opacity="0.9"></a-plane>
-          <a-text 
-            value="Der Stern der Freiheit leitet dich nach Norden." 
-            align="center" width="8" color="white" side="double">
-          </a-text>
-        </a-entity>
+        <a-sphere id="polarstern-sphere" class="interaktiv" position="0 0 -20" radius="0.5" color="#00d4ff" visible="false"></a-sphere>
+        <a-text id="polarText" value="POLARIS" position="0 1.5 -20" rotation="0 180 0" align="center" width="8" color="#00d4ff" visible="false" side="double"></a-text>
       </a-entity>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true">
@@ -74,7 +52,7 @@
     </a-scene>
 
     <script>
-      const log = (m) => { document.getElementById('logger').innerHTML = m; console.log(m); };
+      const log = (m) => { document.getElementById('logger').innerHTML = m; };
       const sky = document.querySelector('#sky');
       const syncBtn = document.getElementById('syncButton');
       let currentAct = 0;
@@ -88,49 +66,38 @@
       function start() {
         document.getElementById('overlay').style.display = 'none';
         syncBtn.style.display = 'block';
-        log("Akt 0: Dunkelheit");
+        log("Akt 0: Dunkelheit. Warte auf Sync...");
       }
 
       syncBtn.addEventListener('click', function() {
         const cam = document.querySelector('a-camera');
         let rot = cam.getAttribute('rotation');
         
-        // Deine Mapping-Werte
         let imagePolarisY = -70.15; 
         let targetY = rot.y - imagePolarisY;
 
-        // "Blitz-Effekt" beim Umschalten
-        sky.setAttribute('color', 'white');
-        
-        setTimeout(() => {
-          if (currentAct === 0) {
-            log("Akt 1: Sterne");
-            sky.removeAttribute('color'); 
-            sky.setAttribute('src', '#skyClean');
-            document.getElementById('debugDots').setAttribute('visible', 'false');
-            syncBtn.innerText = "STERNBILDER ENTHÜLLEN";
-            currentAct = 1;
-          } else if (currentAct === 1) {
-            log("Akt 2: Linien");
-            sky.setAttribute('src', '#skyLines');
-            document.getElementById('polarstern-sphere').setAttribute('visible', 'true');
-            document.getElementById('polarText').setAttribute('visible', 'true');
-            syncBtn.innerText = "NEU AUSRICHTEN";
-            currentAct = 2;
-          }
-          // Rotation anwenden
-          sky.setAttribute('rotation', {x: 0, y: targetY, z: 0});
-        }, 100);
-      });
-
-      // Orakel-Trigger
-      document.getElementById('polarstern-sphere').addEventListener('click', function() {
-        if (currentAct === 2) {
-          document.getElementById('oracle-panel').setAttribute('visible', 'true');
-          // Hier käme der Audio-Befehl:
-          // document.getElementById('voice').play();
-          setTimeout(() => { document.getElementById('oracle-panel').setAttribute('visible', 'false'); }, 10000);
+        if (currentAct === 0) {
+          log("Lade Akt 1 (Clean Stars)...");
+          // Wir setzen das Material direkt und entfernen die Farbe
+          sky.setAttribute('material', {
+            src: '#skyClean',
+            color: '#FFF',
+            shader: 'flat'
+          });
+          syncBtn.innerText = "LINIEN ENTHÜLLEN";
+          currentAct = 1;
+        } 
+        else if (currentAct === 1) {
+          log("Lade Akt 2 (Lines)...");
+          sky.setAttribute('material', 'src', '#skyLines');
+          document.getElementById('polarstern-sphere').setAttribute('visible', 'true');
+          document.getElementById('polarText').setAttribute('visible', 'true');
+          syncBtn.innerText = "HIMMEL RE-SYNC";
+          currentAct = 2;
         }
+
+        // Die Rotation wird immer angewendet
+        sky.setAttribute('rotation', {x: 0, y: targetY, z: 0});
       });
     </script>
   </body>
