@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Oracle du Ciel - Mockup</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <a-sky src="https://cdn.glitch.global/60d00f75-927b-40f4-8395-585a97561f55/stars.jpg?1629812345678" rotation="0 -90 0"></a-sky>
+
+      <a-sphere id="satellites" radius="90" material="color: #00ff00; side: back; opacity: 0.3; wireframe: true;" visible="false"></a-sphere>
+
+      <a-sphere position="5 15 -20" radius="1.5" color="yellow" opacity="0.5" 
+                animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; dur: 1000; loop: true">
+      </a-sphere>
+
+      <a-camera look-controls="magicWindowTrackingEnabled: true; touchEnabled: true;"></a-camera>
+    </a-scene>
+
+    <div style="position: fixed; bottom: 20px; left: 20px; z-index: 999;">
+      <button onclick="document.querySelector('#satellites').setAttribute('visible', 'true')" style="padding: 10px;">Satelliten AN</button>
+      <button onclick="document.querySelector('#satellites').setAttribute('visible', 'false')" style="padding: 10px;">Satelliten AUS</button>
+    </div>
+  </body>
+</html>
