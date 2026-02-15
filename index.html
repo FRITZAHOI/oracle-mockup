@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Fine Tuning</title>
+    <title>Oracle du Ciel - Precision Calibration</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -97,9 +97,9 @@
         let rot = cam.getAttribute('rotation');
         
         if (currentAct === 0) {
-          // --- PRÄZISIONS-WERTE ---
-          let imagePolarisY = -138; // Korrektur 2° nach rechts
-          let imagePolarisX = 4;    // Korrektur 1° nach oben
+          // --- FEIN-JUSTIERUNG ---
+          let imagePolarisY = -140; // 5 Grad weiter zurück als -135
+          let imagePolarisX = 5;    // 5 Grad Neigung nach unten
           
           let targetY = rot.y - imagePolarisY;
           let targetX = rot.x - imagePolarisX;
@@ -107,8 +107,10 @@
           sky.removeAttribute('color');
           sky.setAttribute('material', { src: '#skyClean', shader: 'flat' });
           
-          // Rotation anwenden
+          // Wir setzen die Rotation jetzt auf beiden Achsen
           sky.setAttribute('rotation', {x: targetX, y: targetY, z: 0});
+          
+          // Die Kugel-Gruppe folgt der Blickrichtung des Users (X und Y fixiert)
           anchor.setAttribute('rotation', {x: rot.x, y: rot.y, z: 0});
 
           syncBtn.innerText = "Milchstraße suchen & klicken";
@@ -126,3 +128,14 @@
       document.getElementById('polarstern-sphere').addEventListener('click', function() {
         if (currentAct === 2) {
           const panel = document.getElementById('oracle-panel');
+          panel.setAttribute('visible', 'true');
+          if (voice) {
+            voice.currentTime = 0;
+            voice.play().catch(e => console.log("Audio-Fehler:", e));
+          }
+          setTimeout(() => { panel.setAttribute('visible', 'false'); }, 15000);
+        }
+      });
+    </script>
+  </body>
+</html>
