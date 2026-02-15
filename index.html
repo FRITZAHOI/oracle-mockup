@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle - 4K Optimized</title>
+    <title>Oracle du Ciel Mockup</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -10,11 +10,11 @@
         background: #000; color: white; display: flex; flex-direction: column;
         justify-content: center; align-items: center; z-index: 9999; font-family: sans-serif;
       }
-      button { padding: 20px 40px; font-size: 20px; background: #222; color: white; border: 2px solid white; border-radius: 10px; }
+      button { padding: 20px 40px; font-size: 20px; background: #222; color: white; border: 2px solid white; border-radius: 10px; cursor: pointer; }
       #syncButton {
         position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
         z-index: 10001; padding: 15px 30px; background: #00d4ff; color: #000;
-        border: none; border-radius: 50px; display: none; font-weight: bold;
+        border: none; border-radius: 50px; display: none; font-weight: bold; font-family: sans-serif;
       }
     </style>
   </head>
@@ -23,7 +23,7 @@
     <div id="overlay">
       <h1>Oracle du Ciel</h1>
       <p id="statusText">Orakel wird geladen ...</p>
-      <button id="startButton" style="display:none;">Starten</button>
+      <button id="startButton" style="display:none;">Himmelsbeobachtung starten</button>
     </div>
 
     <button id="syncButton">POLARIS IM NORDEN FIXIEREN</button>
@@ -32,13 +32,37 @@
       <a-assets timeout="10000">
         <img id="skyClean" src="stars_clean.jpg" crossorigin="anonymous">
         <img id="skyLines" src="stars_lines.jpg" crossorigin="anonymous">
+        
+        <audio id="oracleVoice" src="deine_aufnahme.mp3" preload="auto"></audio>
       </a-assets>
 
       <a-sky id="sky" color="#000"></a-sky>
 
-      <a-entity id="polarstern-anchor" rotation="52.25 -70.15 0">
-        <a-sphere id="polarstern-sphere" class="interaktiv" position="0 0 -20" radius="0.5" color="#00d4ff" visible="false"></a-sphere>
-        <a-text id="polarText" value="POLARIS" position="0 1.5 20" rotation="0 180 0" align="center" width="8" color="#00d4ff" visible="false" side="double"></a-text>
+      <a-entity id="polarstern-anchor" rotation="49.25 70.15 0">
+        <a-sphere 
+          id="polarstern-sphere" 
+          class="interaktiv" 
+          position="0 0 -20" 
+          radius="0.4" 
+          color="#00d4ff" 
+          visible="false"
+          material="emissive: #00d4ff; emissiveIntensity: 5">
+        </a-sphere>
+
+        <a-text 
+          id="polarText" value="POLARIS" position="0 1.5 -20" 
+          rotation="0 180 0" align="center" width="8" color="#00d4ff" 
+          visible="false" side="double">
+        </a-text>
+
+        <a-entity id="oracle-panel" position="0 5 -20" rotation="0 180 0" visible="false">
+          <a-plane width="10" height="4" color="#000" opacity="0.9"></a-plane>
+          <a-text 
+            id="panel-text"
+            value="Ich bin der Nordstern." 
+            align="center" width="8" color="white" side="double">
+          </a-text>
+        </a-entity>
       </a-entity>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true">
@@ -49,11 +73,12 @@
     <script>
       const sky = document.querySelector('#sky');
       const syncBtn = document.getElementById('syncButton');
+      const voice = document.getElementById('oracleVoice');
       let currentAct = 0;
 
-      // Warten bis Bilder geladen sind
+      // Lade-Check
       document.querySelector('a-assets').addEventListener('loaded', () => {
-        document.getElementById('statusText').innerText = "Bereit für die Reise.";
+        document.getElementById('statusText').innerText = "Das Orakel ist bereit.";
         document.getElementById('startButton').style.display = "block";
       });
 
@@ -71,30 +96,47 @@
       syncBtn.addEventListener('click', function() {
         const cam = document.querySelector('a-camera');
         let rot = cam.getAttribute('rotation');
-        let imagePolarisY = -70.15; 
+        
+        // DEINE WERTE (Hier ggf. anpassen)
+        let imagePolarisY = 70.15; 
         let targetY = rot.y - imagePolarisY;
 
         if (currentAct === 0) {
-          // AKT 0 -> 1: Cleanup und erste Textur
           sky.removeAttribute('color');
-          sky.setAttribute('material', {
-            src: '#skyClean',
-            shader: 'flat',
-            npot: true // Hilft bei manchen Texturgrößen
-          });
-          syncBtn.innerText = "LINIEN ENTHÜLLEN";
+          sky.setAttribute('material', { src: '#skyClean', shader: 'flat' });
+          syncBtn.innerText = "STERNBILDER ENTHÜLLEN";
           currentAct = 1;
         } 
         else if (currentAct === 1) {
-          // AKT 1 -> 2: Zweite Textur
           sky.setAttribute('material', 'src', '#skyLines');
           document.getElementById('polarstern-sphere').setAttribute('visible', 'true');
           document.getElementById('polarText').setAttribute('visible', 'true');
-          syncBtn.innerText = "HIMMEL NEU JUSTIEREN";
+          
+          // BUTTON ENTFERNEN: Er hat seine Schuldigkeit getan
+          syncBtn.style.display = 'none';
           currentAct = 2;
         }
 
         sky.setAttribute('rotation', {x: 0, y: targetY, z: 0});
+      });
+
+      // ORAKEL LOGIK MIT AUDIO
+      document.getElementById('polarstern-sphere').addEventListener('click', function() {
+        if (currentAct === 2) {
+          const panel = document.getElementById('oracle-panel');
+          panel.setAttribute('visible', 'true');
+          
+          // Audio abspielen
+          if (voice) {
+            voice.currentTime = 0; // Zurück zum Anfang
+            voice.play().catch(e => console.log("Audio-Fehler:", e));
+          }
+
+          // Nach 15 Sekunden (oder wie lang dein Audio ist) ausblenden
+          setTimeout(() => { 
+            panel.setAttribute('visible', 'false'); 
+          }, 15000);
+        }
       });
     </script>
   </body>
