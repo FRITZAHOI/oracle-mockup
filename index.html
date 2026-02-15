@@ -56,7 +56,15 @@
   <a-text value="POLARIS" position="0 1.5 -20" align="center" width="10"></a-text>
 </a-entity>
 
-      <a-camera look-controls="magicWindowTrackingEnabled: true"></a-camera>
+    <a-camera look-controls="magicWindowTrackingEnabled: true">
+  <a-cursor 
+    id="cursor"
+    animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+    animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
+    raycaster="objects: .interaktiv"
+    color="white">
+  </a-cursor>
+</a-camera>
     </a-scene>
 
    <script>
