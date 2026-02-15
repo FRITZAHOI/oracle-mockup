@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Horizon Leveling</title>
+    <title>Oracle du Ciel - Final Master</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -45,11 +45,13 @@
           radius="0.8" 
           color="#0065b8" 
           visible="false"
-          material="emissive: #0065b8; emissiveIntensity: 0.5; shader: flat">
+          material="emissive: #0065b8; emissiveIntensity: 0.5; shader: flat"
+          animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
+          animation__glow="property: material.emissiveIntensity; to: 1.5; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine">
         </a-sphere>
 
         <a-text 
-          id="polarText" value="POLARIS" position="0 28 -40" 
+          id="polarText" value="POLARIS" position="0 29 -40" 
           align="center" width="10" color="#0065b8" 
           visible="false" scale="3 3 3">
         </a-text>
@@ -97,22 +99,21 @@
         let rot = cam.getAttribute('rotation');
         
         if (currentAct === 0) {
-          // --- PRÄZISIONS-WERTE ---
-          let imagePolarisY = -140; // Deine gewünschte X-Ausrichtung
-          let imagePolarisX = 1;    // Deine gewünschte Y-Ausrichtung (Höhe)
+          // Deine kalibrierten Werte
+          let imagePolarisY = -140; 
+          let imagePolarisX = 1;    
           
           let targetY = rot.y - imagePolarisY;
           let targetX = rot.x - imagePolarisX;
           
-          // Berg-Fix: Wir nehmen nur einen Bruchteil der iPad-Neigung 
-          // und addieren einen kleinen Offset, um den absteigenden Berg zu verhindern.
-          let targetZ = (rot.z * 0.5) - 1.0; 
+          // Horizont-Stabilisierung auf exakt -0.5 Grad
+          let targetZ = -0.5; 
           
           sky.removeAttribute('color');
           sky.setAttribute('material', { src: '#skyClean', shader: 'flat' });
           
           sky.setAttribute('rotation', {x: targetX, y: targetY, z: targetZ});
-          anchor.setAttribute('rotation', {x: rot.x, y: rot.y, z: rot.z});
+          anchor.setAttribute('rotation', {x: rot.x, y: rot.y, z: 0});
 
           syncBtn.innerText = "Milchstraße suchen & klicken";
           currentAct = 1;
