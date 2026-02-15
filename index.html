@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle - Texture Fix</title>
+    <title>Oracle - 4K Optimized</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -16,22 +16,17 @@
         z-index: 10001; padding: 15px 30px; background: #00d4ff; color: #000;
         border: none; border-radius: 50px; display: none; font-weight: bold;
       }
-      #logger {
-        position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.5); 
-        color: lime; font-size: 10px; padding: 5px; z-index: 10005; pointer-events: none;
-      }
     </style>
   </head>
   <body>
 
-    <div id="logger">Status: Ready</div>
-
     <div id="overlay">
       <h1>Oracle du Ciel</h1>
-      <button id="startButton">Performance Starten</button>
+      <p id="statusText">Bilder werden geladen...</p>
+      <button id="startButton" style="display:none;">Starten</button>
     </div>
 
-    <button id="syncButton">POLARIS FIXIEREN</button>
+    <button id="syncButton">POLARIS IM NORDEN FIXIEREN</button>
 
     <a-scene>
       <a-assets timeout="10000">
@@ -39,7 +34,7 @@
         <img id="skyLines" src="stars_lines.jpg" crossorigin="anonymous">
       </a-assets>
 
-      <a-sky id="sky" color="#050505" rotation="0 0 0"></a-sky>
+      <a-sky id="sky" color="#000"></a-sky>
 
       <a-entity id="polarstern-anchor" rotation="48.16 -70.15 0">
         <a-sphere id="polarstern-sphere" class="interaktiv" position="0 0 -20" radius="0.5" color="#00d4ff" visible="false"></a-sphere>
@@ -52,10 +47,15 @@
     </a-scene>
 
     <script>
-      const log = (m) => { document.getElementById('logger').innerHTML = m; };
       const sky = document.querySelector('#sky');
       const syncBtn = document.getElementById('syncButton');
       let currentAct = 0;
+
+      // Warten bis Bilder geladen sind
+      document.querySelector('a-assets').addEventListener('loaded', () => {
+        document.getElementById('statusText').innerText = "Bereit für die Reise.";
+        document.getElementById('startButton').style.display = "block";
+      });
 
       document.getElementById('startButton').addEventListener('click', function() {
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -66,37 +66,34 @@
       function start() {
         document.getElementById('overlay').style.display = 'none';
         syncBtn.style.display = 'block';
-        log("Akt 0: Dunkelheit. Warte auf Sync...");
       }
 
       syncBtn.addEventListener('click', function() {
         const cam = document.querySelector('a-camera');
         let rot = cam.getAttribute('rotation');
-        
         let imagePolarisY = -70.15; 
         let targetY = rot.y - imagePolarisY;
 
         if (currentAct === 0) {
-          log("Lade Akt 1 (Clean Stars)...");
-          // Wir setzen das Material direkt und entfernen die Farbe
+          // AKT 0 -> 1: Cleanup und erste Textur
+          sky.removeAttribute('color');
           sky.setAttribute('material', {
             src: '#skyClean',
-            color: '#FFF',
-            shader: 'flat'
+            shader: 'flat',
+            npot: true // Hilft bei manchen Texturgrößen
           });
           syncBtn.innerText = "LINIEN ENTHÜLLEN";
           currentAct = 1;
         } 
         else if (currentAct === 1) {
-          log("Lade Akt 2 (Lines)...");
+          // AKT 1 -> 2: Zweite Textur
           sky.setAttribute('material', 'src', '#skyLines');
           document.getElementById('polarstern-sphere').setAttribute('visible', 'true');
           document.getElementById('polarText').setAttribute('visible', 'true');
-          syncBtn.innerText = "HIMMEL RE-SYNC";
+          syncBtn.innerText = "HIMMEL NEU JUSTIEREN";
           currentAct = 2;
         }
 
-        // Die Rotation wird immer angewendet
         sky.setAttribute('rotation', {x: 0, y: targetY, z: 0});
       });
     </script>
