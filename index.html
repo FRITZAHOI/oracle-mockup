@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Horizon Fix</title>
+    <title>Oracle du Ciel - Horizon Leveling</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -97,20 +97,20 @@
         let rot = cam.getAttribute('rotation');
         
         if (currentAct === 0) {
-          // --- KALIBRIERUNG ---
-          let imagePolarisY = -140; // Zurück auf alten Horizontal-Wert
-          let imagePolarisX = 1;    // 1° höher als vorher
-          let imagePolarisZ = 0;    // Standardwert für Tilt
+          // --- PRÄZISIONS-WERTE ---
+          let imagePolarisY = -140; // Deine gewünschte X-Ausrichtung
+          let imagePolarisX = 1;    // Deine gewünschte Y-Ausrichtung (Höhe)
           
           let targetY = rot.y - imagePolarisY;
           let targetX = rot.x - imagePolarisX;
-          // Wir übernehmen die Z-Rotation (Neigung) des iPads, um den Horizont zu begradigen
-          let targetZ = rot.z - imagePolarisZ; 
+          
+          // Berg-Fix: Wir nehmen nur einen Bruchteil der iPad-Neigung 
+          // und addieren einen kleinen Offset, um den absteigenden Berg zu verhindern.
+          let targetZ = (rot.z * 0.5) - 1.0; 
           
           sky.removeAttribute('color');
           sky.setAttribute('material', { src: '#skyClean', shader: 'flat' });
           
-          // Rotation auf allen 3 Achsen anwenden
           sky.setAttribute('rotation', {x: targetX, y: targetY, z: targetZ});
           anchor.setAttribute('rotation', {x: rot.x, y: rot.y, z: rot.z});
 
