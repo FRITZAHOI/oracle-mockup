@@ -32,7 +32,7 @@
 
     <div id="overlay">
       <h1>Oracle du Ciel</h1>
-      <p>Bereit für die Sterne?</p>
+      <p>Ein Blick in die Sterne</p>
       <button id="startButton">Performance starten</button>
     </div>
 
@@ -42,11 +42,24 @@
       </a-assets>
 
       <a-sky src="#skyTexture" rotation="0 -90 0"></a-sky>
-
-      <a-entity position="5 2 -15">
-        <a-sphere radius="0.5" color="yellow"></a-sphere>
-        <a-text value="Orion" align="center" position="0 1 0" width="10"></a-text>
-      </a-entity>
+<a-entity id="polarstern-anchor" rotation="-54.32 197.10 0">
+  <a-sphere 
+    id="polarstern-sphere"
+    position="0 0 -20" 
+    radius="0.5" 
+    color="white" 
+    material="emissive: #fff; emissiveIntensity: 2"
+    animation="property: scale; to: 1.5 1.5 1.5; dir: alternate; dur: 1500; loop: true">
+  </a-sphere>
+  
+  <a-text 
+    value="POLARSTERN (ANKER)" 
+    position="0 1.5 -20" 
+    align="center" 
+    width="12" 
+    color="white">
+  </a-text>
+</a-entity>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true"></a-camera>
     </a-scene>
