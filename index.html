@@ -2,40 +2,18 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Master Mockup</title>
+    <title>Oracle du Ciel - Master Blue</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: #000;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        font-family: sans-serif;
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; color: white; display: flex; flex-direction: column;
+        justify-content: center; align-items: center; z-index: 9999; font-family: sans-serif;
       }
-      button {
-        padding: 20px 40px;
-        font-size: 20px;
-        background: #222;
-        color: white;
-        border: 2px solid white;
-        border-radius: 10px;
-      }
+      button { padding: 20px 40px; font-size: 20px; background: #222; color: white; border: 2px solid white; border-radius: 10px; }
       #syncButton {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 10001;
-        padding: 15px;
-        background: rgba(0,0,0,0.6);
-        color: white;
-        border: 2px solid white;
-        border-radius: 10px;
-        display: none;
+        position: fixed; bottom: 20px; right: 20px; z-index: 10001; padding: 15px;
+        background: rgba(0, 70, 255, 0.6); color: white; border: 2px solid #00d4ff; border-radius: 10px; display: none;
       }
     </style>
   </head>
@@ -43,7 +21,6 @@
 
     <div id="overlay">
       <h1>Oracle du Ciel</h1>
-      <p>Blick in die Sterne</p>
       <button id="startButton">Performance Starten</button>
     </div>
 
@@ -54,32 +31,33 @@
         <img id="skyTexture" src="stars.jpg">
       </a-assets>
 
-     <a-sky id="sky" src="#skyTexture" rotation="0 0 0">
-  
-  <a-entity id="polarstern-anchor" rotation="-46.44 197.14 0">
-<a-sphere 
-  id="polarstern-sphere"
-  class="interaktiv"
-  position="0 0 -20" 
-  radius="0.02" 
-  color="white" 
-  material="emissive: #fff; emissiveIntensity: 3">
-</a-sphere>
-<a-text value="POLARIS" position="0 0.3 -20" align="center" width="5"></a-text>
-    <a-text value="POLARIS" ...></a-text>
-    ...
-  </a-entity>
-</a-sky>
+      <a-sky id="sky" src="#skyTexture" rotation="0 0 0">
+        
+        <a-entity id="polarstern-anchor" rotation="-46.44 197.14 0">
+          <a-sphere 
+            id="polarstern-sphere"
+            class="interaktiv"
+            position="0 0 -20" 
+            radius="0.02" 
+            color="#00d4ff" 
+            material="emissive: #00d4ff; emissiveIntensity: 5">
+          </a-sphere>
+          <a-text value="POLARIS" position="0 0.4 -20" align="center" width="4" color="#00d4ff"></a-text>
+
+          <a-entity id="oracle-panel" position="0 4 -20" visible="false">
+            <a-plane width="8" height="3" color="#000" opacity="0.9"></a-plane>
+            <a-text 
+              value="Der Polarstern wurde oft als 'Stern der Freiheit' bezeichnet, da er versklavten Menschen den Weg nach Norden wies." 
+              align="center" width="7" color="white">
+            </a-text>
+          </a-entity>
+        </a-entity>
+      </a-sky>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true">
         <a-cursor 
-          id="cursor"
-          fuse="true" 
-          fuse-timeout="1500"
-          animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
-          animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
-          raycaster="objects: .interaktiv"
-          color="white">
+          id="cursor" fuse="true" fuse-timeout="1500"
+          raycaster="objects: .interaktiv" color="#00d4ff">
         </a-cursor>
       </a-camera>
     </a-scene>
@@ -93,20 +71,14 @@
       const polarisSphere = document.querySelector('#polarstern-sphere');
       const oraclePanel = document.querySelector('#oracle-panel');
 
-      // Debug Textfeld erstellen
       const debugText = document.createElement('div');
-      debugText.style = "position:fixed; top:10px; left:10px; background:rgba(0,0,0,0.5); color:lime; padding:5px; font-family:monospace; z-index:10000; display:none;";
+      debugText.style = "position:fixed; top:10px; left:10px; background:rgba(0,0,0,0.5); color:#00d4ff; padding:5px; font-family:monospace; z-index:10000; display:none;";
       document.body.appendChild(debugText);
 
-      // 1. START LOGIK
       startButton.addEventListener('click', function() {
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-          DeviceOrientationEvent.requestPermission()
-            .then(state => { if (state === 'granted') initPerformance(); })
-            .catch(console.error);
-        } else {
-          initPerformance();
-        }
+          DeviceOrientationEvent.requestPermission().then(state => { if (state === 'granted') initPerformance(); });
+        } else { initPerformance(); }
       });
 
       function initPerformance() {
@@ -114,55 +86,47 @@
         debugText.style.display = 'block';
         syncBtn.style.display = 'block';
 
-        // 2. MASTER SYNC (Welt drehen)
-const performSync = () => {
-  // 1. Wo schaust du in der ECHTEN Welt gerade hin? (iPad-Blick)
-  let currentRot = camera.getAttribute('rotation');
-  
-  // 2. Wo liegt Polaris auf deinem FOTO? (Deine Messwerte von vorhin)
-  // WICHTIG: Diese Werte müssen exakt zu dem Bild passen!
-  let imagePolarisY = 197.14; 
-  let imagePolarisX = -46.44;
+        const performSync = () => {
+          // Wir holen die Rotation der Kamera (Blick des iPad)
+          let currentRot = camera.getAttribute('rotation');
+          
+          // Bild-Koordinaten von Polaris (Referenz auf der stars.jpg)
+          let imagePolarisY = 197.14; 
+          let imagePolarisX = -46.44;
 
-  // 3. Die magische Berechnung:
-  // "Neue Himmel-Drehung = Mein Blick - Position im Bild"
-  let newSkyRotY = currentRot.y - imagePolarisY;
-  let newSkyRotX = currentRot.x - imagePolarisX;
+          // BERECHNUNG: Wir setzen die Rotation des Himmels ABSOLUT neu.
+          // Wir ziehen die Bild-Position von unserem aktuellen Blick ab.
+          let targetY = currentRot.y - imagePolarisY;
+          let targetX = currentRot.x - imagePolarisX;
 
-  // 4. Wir drehen den gesamten Himmel. 
-  // Da der Anker IM Himmel ist, dreht er sich perfekt mit!
-  sky.setAttribute('rotation', {
-    x: newSkyRotX, 
-    y: newSkyRotY, 
-    z: 0
-  });
+          // Wichtig: Wir überschreiben die alte Rotation komplett (kein += oder so)
+          sky.setAttribute('rotation', { x: targetX, y: targetY, z: 0 });
 
-  // Feedback
-  syncBtn.style.background = "green";
-  syncBtn.innerText = "HIMMEL JUSTIERT!";
-  setTimeout(() => { 
-    syncBtn.style.background = "rgba(0,0,0,0.6)"; 
-    syncBtn.innerText = "POLARIS HIER FIXIEREN";
-  }, 1000);
-};
+          syncBtn.style.background = "#00d4ff";
+          syncBtn.style.color = "#000";
+          syncBtn.innerText = "HIMMEL KALIBRIERT!";
+          setTimeout(() => { 
+            syncBtn.style.background = "rgba(0,0,0,0.6)"; 
+            syncBtn.style.color = "white";
+            syncBtn.innerText = "POLARIS HIER FIXIEREN";
+          }, 1000);
+        };
 
         syncBtn.addEventListener('click', performSync);
         window.addEventListener('keydown', (e) => { if(e.key.toLowerCase() === 'c') performSync(); });
 
-        // 3. ORAKEL TRIGGER
         polarisSphere.addEventListener('click', function() {
           oraclePanel.setAttribute('visible', 'true');
-          polarisSphere.setAttribute('color', 'springgreen');
+          polarisSphere.setAttribute('color', 'white'); // Blinkt kurz weiß auf
           setTimeout(() => {
             oraclePanel.setAttribute('visible', 'false');
-            polarisSphere.setAttribute('color', 'white');
+            polarisSphere.setAttribute('color', '#00d4ff');
           }, 8000);
         });
 
-        // 4. DEBUG UPDATE
         setInterval(() => {
           let rot = camera.getAttribute('rotation');
-          if(rot) debugText.innerHTML = `BLICK:<br>X: ${rot.x.toFixed(2)} | Y: ${rot.y.toFixed(2)}`;
+          if(rot) debugText.innerHTML = `DEIN BLICK:<br>X: ${rot.x.toFixed(2)} | Y: ${rot.y.toFixed(2)}`;
         }, 100);
       }
     </script>
