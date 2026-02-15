@@ -22,7 +22,7 @@
 
     <div id="overlay">
       <h1>Oracle du Ciel</h1>
-      <p id="statusText">Bilder werden geladen...</p>
+      <p id="statusText">Orakel wird geladen ...</p>
       <button id="startButton" style="display:none;">Starten</button>
     </div>
 
@@ -36,9 +36,9 @@
 
       <a-sky id="sky" color="#000"></a-sky>
 
-      <a-entity id="polarstern-anchor" rotation="48.16 -70.15 0">
+      <a-entity id="polarstern-anchor" rotation="52.25 -70.15 0">
         <a-sphere id="polarstern-sphere" class="interaktiv" position="0 0 -20" radius="0.5" color="#00d4ff" visible="false"></a-sphere>
-        <a-text id="polarText" value="POLARIS" position="0 1.5 -20" rotation="0 180 0" align="center" width="8" color="#00d4ff" visible="false" side="double"></a-text>
+        <a-text id="polarText" value="POLARIS" position="0 1.5 20" rotation="0 180 0" align="center" width="8" color="#00d4ff" visible="false" side="double"></a-text>
       </a-entity>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true">
