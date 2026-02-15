@@ -35,6 +35,9 @@
       <p>Blick in die Sterne</p>
       <button id="startButton">Starten</button>
     </div>
+    <button id="syncButton" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; padding: 10px; background: rgba(255,255,255,0.3); color: white; border: 1px solid white; display: none;">
+  Polaris hier festpinnen
+</button>
 
     <a-scene>
       <a-assets>
@@ -42,23 +45,15 @@
       </a-assets>
 
       <a-sky src="#skyTexture" rotation="0 -90 0"></a-sky>
-<a-entity id="polarstern-anchor" rotation="-46.44 197.14 0">
+<a-entity id="polarstern-anchor" rotation="-47.5 198.5 0">
   <a-sphere 
-    id="polarstern-sphere"
+    class="interaktiv"
     position="0 0 -20" 
-    radius="0.4" 
+    radius="0.5" 
     color="white" 
-    material="emissive: #fff; emissiveIntensity: 2"
-    animation="property: scale; to: 1.3 1.3 1.3; dir: alternate; dur: 1500; loop: true">
+    material="emissive: #fff; emissiveIntensity: 2">
   </a-sphere>
-  
-  <a-text 
-    value="POLARIS (FIXPUNKT)" 
-    position="0 1.2 -20" 
-    align="center" 
-    width="10" 
-    color="white">
-  </a-text>
+  <a-text value="POLARIS" position="0 1.5 -20" align="center" width="10"></a-text>
 </a-entity>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true"></a-camera>
@@ -98,26 +93,47 @@
     }
   });
 
-  function initPerformance() {
-    overlay.style.display = 'none';
-    debugText.style.display = 'block'; // Messgerät anzeigen
+function initPerformance() {
+  overlay.style.display = 'none';
+  debugText.style.display = 'block';
+  
+  const syncBtn = document.getElementById('syncButton');
+  syncBtn.style.display = 'block'; // Den Button jetzt sichtbar machen
 
-    // 2. Kompass-Kalibrierung (Norden finden)
-    window.addEventListener('deviceorientationabsolute', function(event) {
-      let compass = event.alpha || event.webkitCompassHeading;
-      if (compass) {
-        // Wir drehen den Himmel einmalig Richtung Norden
-        sky.setAttribute('rotation', `0 ${-compass} 0`);
-      }
-    }, { once: true });
+  // 1. Initialer Kompass-Check
+  window.addEventListener('deviceorientationabsolute', function(event) {
+    let compass = event.webkitCompassHeading || event.alpha;
+    if (compass) {
+      sky.setAttribute('rotation', `0 ${-compass} 0`);
+    }
+  }, { once: true });
 
-    // 3. Das Messgerät-Update (läuft ständig)
-    setInterval(() => {
-      // Wir lesen die aktuelle Rotation der Kamera aus
-      let rot = camera.getAttribute('rotation');
-      debugText.innerHTML = `Blickwinkel:<br>X: ${rot.x.toFixed(2)} (Hoch/Runter)<br>Y: ${rot.y.toFixed(2)} (Links/Rechts)`;
-    }, 100);
-  }
+  // 2. Das Messgerät-Update (läuft ständig im Hintergrund)
+  setInterval(() => {
+    let rot = camera.getAttribute('rotation');
+    debugText.innerHTML = `BLICKWINKEL:<br>X: ${rot.x.toFixed(2)} | Y: ${rot.y.toFixed(2)}<br><br>Ziele auf Polaris und drücke den Button!`;
+  }, 100);
+
+  // 3. Die eigentliche Sync-Funktion
+  const performSync = () => {
+    let currentRot = camera.getAttribute('rotation');
+    // Wir setzen den Anker genau dorthin, wo die Kamera gerade hinschaut
+    // Wir invertieren die Werte, damit der Anker im Raum "stehenbleibt"
+    document.querySelector('#polarstern-anchor').setAttribute('rotation', `${-currentRot.x} ${-currentRot.y} 0`);
+    
+    // Kleines visuelles Feedback: Button blinkt kurz grün
+    syncBtn.style.background = "green";
+    setTimeout(() => { syncBtn.style.background = "rgba(0,0,0,0.6)"; }, 500);
+    
+    console.log("Kalibriert auf X:", -currentRot.x, "Y:", -currentRot.y);
+  };
+
+  // 4. Auslöser für Laptop (Taste C) und iPad (Button Klick)
+  window.addEventListener('keydown', (e) => { if(e.key === 'c' || e.key === 'C') performSync(); });
+// 4. Auslöser für Laptop (Taste C) und iPad (Button Klick)
+  window.addEventListener('keydown', (e) => { if(e.key === 'c' || e.key === 'C') performSync(); });
+  syncBtn.addEventListener('click', performSync);
+} // <--- Diese eine Klammer schließt "initPerformance"
 </script>
   </body>
 </html>
