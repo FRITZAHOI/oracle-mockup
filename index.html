@@ -57,7 +57,15 @@
      <a-sky id="sky" src="#skyTexture" rotation="0 0 0">
   
   <a-entity id="polarstern-anchor" rotation="-46.44 197.14 0">
-    <a-sphere id="polarstern-sphere" class="interaktiv" ...></a-sphere>
+<a-sphere 
+  id="polarstern-sphere"
+  class="interaktiv"
+  position="0 0 -20" 
+  radius="0.02" 
+  color="white" 
+  material="emissive: #fff; emissiveIntensity: 3">
+</a-sphere>
+<a-text value="POLARIS" position="0 0.3 -20" align="center" width="5"></a-text>
     <a-text value="POLARIS" ...></a-text>
     ...
   </a-entity>
