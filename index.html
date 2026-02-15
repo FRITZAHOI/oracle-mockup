@@ -70,13 +70,15 @@
       </a-entity>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true">
-        <a-cursor 
-          id="cursor"
-          animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
-          animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
-          raycaster="objects: .interaktiv"
-          color="white">
-        </a-cursor>
+       <a-cursor 
+  id="cursor"
+  fuse="true" 
+  fuse-timeout="1500"
+  animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+  animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
+  raycaster="objects: .interaktiv"
+  color="white">
+</a-cursor>
       </a-camera>
     </a-scene>
 
@@ -130,12 +132,28 @@
           debugText.innerHTML = `BLICKWINKEL:<br>X: ${rot.x.toFixed(2)} | Y: ${rot.y.toFixed(2)}<br><br>Ziele auf Polaris und drücke den Button!`;
         }, 100);
 
-        const performSync = () => {
-          let currentRot = camera.getAttribute('rotation');
-          document.querySelector('#polarstern-anchor').setAttribute('rotation', `${-currentRot.x} ${-currentRot.y} 0`);
-          syncBtn.style.background = "green";
-          setTimeout(() => { syncBtn.style.background = "rgba(0,0,0,0.6)"; }, 500);
-        };
+      const performSync = () => {
+  // Wir holen uns die aktuelle Blickrichtung der Kamera
+  let currentRot = camera.getAttribute('rotation');
+  
+  // Wir setzen den Anker GENAU auf diese Werte (ohne Minus!)
+  // Damit springt die Kugel exakt dorthin, wo du gerade hinschaust
+  document.querySelector('#polarstern-anchor').setAttribute('rotation', {
+    x: currentRot.x,
+    y: currentRot.y,
+    z: 0
+  });
+  
+  // Feedback am Button
+  syncBtn.style.background = "green";
+  syncBtn.innerText = "FIXIERT!";
+  setTimeout(() => { 
+    syncBtn.style.background = "rgba(0,0,0,0.6)"; 
+    syncBtn.innerText = "POLARIS HIER FIXIEREN";
+  }, 1000);
+
+  console.log("Kugel positioniert bei:", currentRot.x, currentRot.y);
+};
 
         window.addEventListener('keydown', (e) => { if(e.key === 'c' || e.key === 'C') performSync(); });
         syncBtn.addEventListener('click', performSync);
