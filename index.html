@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Fixed Loading</title>
+    <title>Oracle du Ciel - Final Calibration</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -22,14 +22,14 @@
 
     <div id="overlay">
       <h1>Oracle du Ciel</h1>
-      <p id="statusText">Himmel wird vorbereitet ...</p>
+      <p id="statusText">Himmel wird geladen ...</p>
       <button id="startButton" style="display:none;">Himmelsbeobachtung starten</button>
     </div>
 
     <button id="syncButton">POLARSTERN IM NORDEN FIXIEREN</button>
 
     <a-scene>
-      <a-assets timeout="30000">
+      <a-assets timeout="10000">
         <img id="skyClean" src="stars_clean.jpg" crossorigin="anonymous">
         <img id="skyLines" src="stars_lines.jpg" crossorigin="anonymous">
         <audio id="oracleVoice" src="deine_aufnahme.mp3" preload="auto"></audio>
@@ -76,31 +76,13 @@
       const voice = document.getElementById('oracleVoice');
       let currentAct = 0;
 
-      // VERBESSERTE LADE-LOGIK
-      const assets = document.querySelector('a-assets');
-      const startButton = document.getElementById('startButton');
-      const statusText = document.getElementById('statusText');
-
-      // Wenn alles geladen ist
-      assets.addEventListener('loaded', () => {
-        showStart();
+      // Lade-Event
+      document.querySelector('a-assets').addEventListener('loaded', () => {
+        document.getElementById('statusText').innerText = "Das Orakel ist bereit.";
+        document.getElementById('startButton').style.display = "block";
       });
 
-      // Sicherheits-Fallback: Nach 5 Sekunden trotzdem Start erlauben, 
-      // falls nur eine Datei (z.B. Audio) fehlt
-      setTimeout(() => {
-        if (startButton.style.display === "none") {
-          console.log("Hinweis: Ladevorgang dauert lang, erzwinge Start-Option.");
-          showStart();
-        }
-      }, 5000);
-
-      function showStart() {
-        statusText.innerText = "Das Orakel ist bereit.";
-        startButton.style.display = "block";
-      }
-
-      startButton.addEventListener('click', function() {
+      document.getElementById('startButton').addEventListener('click', function() {
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
           DeviceOrientationEvent.requestPermission().then(state => { if (state === 'granted') start(); });
         } else { start(); }
@@ -116,9 +98,9 @@
         let rot = cam.getAttribute('rotation');
         
         if (currentAct === 0) {
-          // Deine kalibrierten Werte
-          let imagePolarisY = -138; 
-          let imagePolarisX = 4;    
+          // --- DIE LETZTEN FEINSCHLIFFE ---
+          let imagePolarisY = -138; // Seitlich (X-Achse im User-Feedback)
+          let imagePolarisX = 2;    // Höhe (Y-Achse im User-Feedback) - um 2° reduziert für Aufwärtsbewegung
           
           let targetY = rot.y - imagePolarisY;
           let targetX = rot.x - imagePolarisX;
@@ -145,7 +127,7 @@
         if (currentAct === 2) {
           const panel = document.getElementById('oracle-panel');
           panel.setAttribute('visible', 'true');
-          if (voice && voice.readyState >= 2) { // Nur spielen, wenn geladen
+          if (voice) {
             voice.currentTime = 0;
             voice.play().catch(e => console.log("Audio-Fehler:", e));
           }
