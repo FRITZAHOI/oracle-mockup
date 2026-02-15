@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Final Master</title>
+    <title>Oracle du Ciel - Master Fix</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -10,7 +10,10 @@
         background: #000; color: white; display: flex; flex-direction: column;
         justify-content: center; align-items: center; z-index: 9999; font-family: sans-serif;
       }
-      button { padding: 20px 40px; font-size: 20px; background: #222; color: white; border: 2px solid white; border-radius: 10px; cursor: pointer; }
+      button { 
+        padding: 20px 40px; font-size: 20px; background: #222; color: white; 
+        border: 2px solid white; border-radius: 10px; cursor: pointer; margin-top: 20px;
+      }
       #syncButton {
         position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
         z-index: 10001; padding: 15px 30px; background: #0065b8; color: #fff;
@@ -21,8 +24,8 @@
   <body>
 
     <div id="overlay">
-      <h1>Oracle du Ciel</h1>
-      <p id="statusText">Himmel wird geladen ...</p>
+      <h1 id="title">Oracle du Ciel</h1>
+      <p id="statusText">Das Universum wird geladen ...</p>
       <button id="startButton" style="display:none;">Himmelsbeobachtung starten</button>
     </div>
 
@@ -38,6 +41,7 @@
       <a-sky id="sky" color="#000"></a-sky>
 
       <a-entity id="polarstern-anchor">
+        
         <a-sphere 
           id="polarstern-sphere" 
           class="interaktiv" 
@@ -45,9 +49,9 @@
           radius="0.8" 
           color="#0065b8" 
           visible="false"
-          material="emissive: #0065b8; emissiveIntensity: 0.5; shader: flat"
+          material="emissive: #0065b8; emissiveIntensity: 0.6; shader: flat"
           animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
-          animation__glow="property: material.emissiveIntensity; to: 1.5; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine">
+          animation__glow="property: material.emissiveIntensity; to: 1.8; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine">
         </a-sphere>
 
         <a-text 
@@ -76,14 +80,26 @@
       const syncBtn = document.getElementById('syncButton');
       const anchor = document.getElementById('polarstern-anchor');
       const voice = document.getElementById('oracleVoice');
+      const startBtn = document.getElementById('startButton');
+      const statusText = document.getElementById('statusText');
       let currentAct = 0;
 
+      // Sicherstellen, dass der Start-Button erscheint, auch wenn ein Asset fehlt
       document.querySelector('a-assets').addEventListener('loaded', () => {
-        document.getElementById('statusText').innerText = "Das Orakel ist bereit.";
-        document.getElementById('startButton').style.display = "block";
+        showReady();
       });
 
-      document.getElementById('startButton').addEventListener('click', function() {
+      // Notfall-Timeout: Nach 4 Sekunden den Start erzwingen
+      setTimeout(() => {
+        if (startBtn.style.display === "none") showReady();
+      }, 4000);
+
+      function showReady() {
+        statusText.innerText = "Das Orakel ist bereit.";
+        startBtn.style.display = "block";
+      }
+
+      startBtn.addEventListener('click', function() {
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
           DeviceOrientationEvent.requestPermission().then(state => { if (state === 'granted') start(); });
         } else { start(); }
@@ -99,14 +115,14 @@
         let rot = cam.getAttribute('rotation');
         
         if (currentAct === 0) {
-          // Deine kalibrierten Werte
+          // Deine kalibrierten Präzisionswerte
           let imagePolarisY = -140; 
           let imagePolarisX = 1;    
           
           let targetY = rot.y - imagePolarisY;
           let targetX = rot.x - imagePolarisX;
           
-          // Horizont-Stabilisierung auf exakt -0.5 Grad
+          // Horizont-Stabilisierung
           let targetZ = -0.5; 
           
           sky.removeAttribute('color');
@@ -127,6 +143,7 @@
         }
       });
 
+      // Orakel-Klick-Logik
       document.getElementById('polarstern-sphere').addEventListener('click', function() {
         if (currentAct === 2) {
           const panel = document.getElementById('oracle-panel');
