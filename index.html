@@ -51,28 +51,60 @@
       <a-camera look-controls="magicWindowTrackingEnabled: true"></a-camera>
     </a-scene>
 
-    <script>
-      const startButton = document.getElementById('startButton');
-      const overlay = document.getElementById('overlay');
+   <script>
+  const startButton = document.getElementById('startButton');
+  const overlay = document.getElementById('overlay');
+  const sky = document.querySelector('a-sky');
+  const camera = document.querySelector('a-camera');
 
-      startButton.addEventListener('click', function() {
-        // Berechtigungen für iPad Sensoren abfragen
-        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-          DeviceOrientationEvent.requestPermission()
-            .then(permissionState => {
-              if (permissionState === 'granted') {
-                overlay.style.display = 'none';
-              }
-            })
-            .catch(err => {
-              alert("Sensoren wurden blockiert.");
-              overlay.style.display = 'none';
-            });
-        } else {
-          // Für Browser, die nicht fragen müssen (Laptop/Android)
-          overlay.style.display = 'none';
-        }
-      });
-    </script>
+  // Wir erstellen ein kleines Textfeld für die Koordinaten-Anzeige
+  const debugText = document.createElement('div');
+  debugText.style.position = 'fixed';
+  debugText.style.top = '10px';
+  debugText.style.left = '10px';
+  debugText.style.background = 'rgba(0,0,0,0.5)';
+  debugText.style.color = 'lime';
+  debugText.style.padding = '5px';
+  debugText.style.fontFamily = 'monospace';
+  debugText.style.zIndex = '10000';
+  debugText.style.display = 'none'; // Erstmal unsichtbar
+  document.body.appendChild(debugText);
+
+  startButton.addEventListener('click', function() {
+    // 1. Sensoren-Berechtigung (iOS)
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission()
+        .then(permissionState => {
+          if (permissionState === 'granted') {
+            initPerformance();
+          }
+        })
+        .catch(console.error);
+    } else {
+      initPerformance();
+    }
+  });
+
+  function initPerformance() {
+    overlay.style.display = 'none';
+    debugText.style.display = 'block'; // Messgerät anzeigen
+
+    // 2. Kompass-Kalibrierung (Norden finden)
+    window.addEventListener('deviceorientationabsolute', function(event) {
+      let compass = event.alpha || event.webkitCompassHeading;
+      if (compass) {
+        // Wir drehen den Himmel einmalig Richtung Norden
+        sky.setAttribute('rotation', `0 ${-compass} 0`);
+      }
+    }, { once: true });
+
+    // 3. Das Messgerät-Update (läuft ständig)
+    setInterval(() => {
+      // Wir lesen die aktuelle Rotation der Kamera aus
+      let rot = camera.getAttribute('rotation');
+      debugText.innerHTML = `Blickwinkel:<br>X: ${rot.x.toFixed(2)} (Hoch/Runter)<br>Y: ${rot.y.toFixed(2)} (Links/Rechts)`;
+    }, 100);
+  }
+</script>
   </body>
 </html>
