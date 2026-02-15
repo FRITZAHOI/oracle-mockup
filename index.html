@@ -44,30 +44,25 @@
         <img id="skyTexture" src="stars.jpg">
       </a-assets>
 
-      <a-sky src="#skyTexture" rotation="0 -90 0"></a-sky>
+     <a-sky id="sky" ...>
+   <a-entity id="polarstern-anchor" ...> ... </a-entity>
+</a-sky>
+    <a-entity id="polarstern-anchor" rotation="-47.91 200.44 0">
+  <a-sphere 
+    id="polarstern-sphere"
+    class="interaktiv"
+    position="0 0 -20" 
+    radius="0.5" 
+    color="white" 
+    material="emissive: #fff; emissiveIntensity: 2">
+  </a-sphere>
+  <a-text value="POLARIS (FIXPUNKT)" position="0 1.5 -20" align="center" width="10"></a-text>
 
-      <a-entity id="polarstern-anchor" rotation="-47.5 198.5 0">
-        <a-sphere 
-          id="polarstern-sphere"
-          class="interaktiv"
-          position="0 0 -20" 
-          radius="0.5" 
-          color="white" 
-          material="emissive: #fff; emissiveIntensity: 2">
-        </a-sphere>
-        <a-text value="POLARIS" position="0 1.5 -20" align="center" width="10"></a-text>
-
-        <a-entity id="oracle-panel" position="0 4 -20" visible="false">
-          <a-plane width="8" height="3" color="#000" opacity="0.8"></a-plane>
-          <a-text 
-            id="oracle-text"
-            value="Der Polarstern wurde oft als 'Stern der Freiheit' bezeichnet, da er versklavten Menschen den Weg nach Norden wies." 
-            align="center" 
-            width="7" 
-            color="white">
-          </a-text>
-        </a-entity>
-      </a-entity>
+  <a-entity id="oracle-panel" position="0 4 -20" visible="false">
+    <a-plane width="8" height="3" color="#000" opacity="0.8"></a-plane>
+    <a-text value="Der Stern der Freiheit leitet dich..." align="center" width="7" color="white"></a-text>
+  </a-entity>
+</a-entity>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true">
        <a-cursor 
@@ -133,26 +128,31 @@
         }, 100);
 
       const performSync = () => {
-  // Wir holen uns die aktuelle Blickrichtung der Kamera
+  // 1. Wo schaust du in der ECHTEN Welt gerade hin?
   let currentRot = camera.getAttribute('rotation');
   
-  // Wir setzen den Anker GENAU auf diese Werte (ohne Minus!)
-  // Damit springt die Kugel exakt dorthin, wo du gerade hinschaust
-  document.querySelector('#polarstern-anchor').setAttribute('rotation', {
-    x: currentRot.x,
-    y: currentRot.y,
-    z: 0
-  });
-  
-  // Feedback am Button
+  // 2. Wo liegt Polaris auf dem BILD? (Unsere Referenzwerte)
+  let imagePolarisY = 197.14; 
+  let imagePolarisX = -46.44;
+
+  // 3. Wir berechnen, wie weit wir das BILD drehen müssen, 
+  // damit sein Polaris genau dort landet, wo du hinschaust.
+  let newSkyRotationY = currentRot.y - imagePolarisY;
+  let newSkyRotationX = currentRot.x - imagePolarisX;
+
+  // 4. Wir drehen das gesamte Bild UND den Anker gleichzeitig
+  // Wir packen alles in eine Gruppe oder drehen beides synchron:
+  sky.setAttribute('rotation', `0 ${newSkyRotationY} 0`);
+  document.querySelector('#polarstern-anchor').setAttribute('rotation', `${imagePolarisX} ${imagePolarisY + newSkyRotationY} 0`);
+
+  // Feedback
   syncBtn.style.background = "green";
-  syncBtn.innerText = "FIXIERT!";
+  syncBtn.innerText = "WELT KALIBRIERT!";
   setTimeout(() => { 
     syncBtn.style.background = "rgba(0,0,0,0.6)"; 
     syncBtn.innerText = "POLARIS HIER FIXIEREN";
   }, 1000);
-
-  console.log("Kugel positioniert bei:", currentRot.x, currentRot.y);
+};
 };
 
         window.addEventListener('keydown', (e) => { if(e.key === 'c' || e.key === 'C') performSync(); });
