@@ -2,159 +2,127 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - 3 Acts Fixed</title>
+    <title>Oracle - Debug Version</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: #000; color: white; display: flex; flex-direction: column;
+        background: #111; color: white; display: flex; flex-direction: column;
         justify-content: center; align-items: center; z-index: 9999; font-family: sans-serif;
-        text-align: center; padding: 20px;
       }
-      button { padding: 20px 40px; font-size: 20px; background: #222; color: white; border: 2px solid white; border-radius: 10px; cursor: pointer; }
+      button { padding: 20px 40px; font-size: 20px; cursor: pointer; z-index: 10002; }
       #syncButton {
         position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-        z-index: 10001; padding: 15px 30px;
-        background: rgba(0, 70, 255, 0.8); color: white; border: 2px solid #00d4ff; border-radius: 50px;
-        display: none; font-weight: bold; font-family: sans-serif;
+        z-index: 10001; padding: 15px 30px; background: #00d4ff; color: black;
+        border: none; border-radius: 50px; display: none; font-weight: bold;
+      }
+      #logger {
+        position: fixed; top: 10px; right: 10px; width: 200px; height: 150px;
+        background: rgba(0,0,0,0.7); color: lime; font-size: 10px; padding: 5px;
+        pointer-events: none; z-index: 10005; font-family: monospace; overflow: hidden;
       }
     </style>
   </head>
   <body>
 
+    <div id="logger">Log: Warte auf Start...</div>
+
     <div id="overlay">
       <h1>Oracle du Ciel</h1>
-      <p>Schließe die Augen... und öffne sie im Nichts.</p>
-      <button id="startButton">Die Reise beginnt</button>
+      <button id="startButton">SENSUREN AKTIVIEREN & START</button>
     </div>
 
-    <button id="syncButton">POLARIS IM NORDEN FIXIEREN</button>
+    <button id="syncButton">POLARIS FIXIEREN</button>
 
-    <a-scene>
+    <a-scene library-logger>
       <a-assets>
         <img id="skyClean" src="stars_clean.jpg">
         <img id="skyLines" src="stars_lines.jpg">
       </a-assets>
 
-      <a-sky id="sky" color="#050505" rotation="0 0 0"></a-sky>
+      <a-sky id="sky" color="#111"></a-sky>
 
-      <a-entity id="polarstern-anchor" rotation="52.16 70.15 0">
-        <a-sphere 
-          id="polarstern-sphere"
-          class="interaktiv"
-          position="0 0 -20" 
-          radius="0.4" 
-          color="#00d4ff" 
-          visible="false"
-          material="emissive: #00d4ff; emissiveIntensity: 5">
-        </a-sphere>
-
-        <a-text 
-          id="polarText"
-          value="POLARIS" 
-          position="0 1.5 20" 
-          rotation="0 180 0" 
-          align="center" 
-          width="8" 
-          color="#00d4ff" 
-          visible="false"
-          side="double">
-        </a-text>
-
-        <a-entity id="oracle-panel" position="0 5 -20" rotation="0 180 0" visible="false">
-          <a-plane width="10" height="4" color="#000" opacity="0.9"></a-plane>
-          <a-text 
-            value="Der Polarstern wurde oft als 'Stern der Freiheit' bezeichnet, da er versklavten Menschen den Weg nach Norden wies." 
-            align="center" width="8" color="white" side="double">
-          </a-text>
-        </a-entity>
+      <a-entity id="debugDots">
+        <a-sphere position="5 0 -10" radius="0.1" color="red"></a-sphere>
+        <a-sphere position="-5 2 -10" radius="0.1" color="blue"></a-sphere>
+        <a-sphere position="0 -3 -10" radius="0.1" color="yellow"></a-sphere>
       </a-entity>
 
-      <a-camera look-controls="magicWindowTrackingEnabled: true">
-        <a-cursor 
-          id="cursor" 
-          fuse="true" 
-          fuse-timeout="1500"
-          raycaster="objects: .interaktiv" 
-          color="#00d4ff">
-        </a-cursor>
+      <a-entity id="polarstern-anchor" rotation="52.16 70.15 0">
+        <a-sphere id="polarstern-sphere" class="interaktiv" position="0 0 -20" radius="0.5" color="#00d4ff" visible="false"></a-sphere>
+      </a-entity>
+
+      <a-camera id="mainCam" look-controls="magicWindowTrackingEnabled: true; touchEnabled: true">
+        <a-cursor color="#00d4ff"></a-cursor>
       </a-camera>
     </a-scene>
 
     <script>
+      const log = (msg) => {
+        const l = document.getElementById('logger');
+        l.innerHTML = msg + "<br>" + l.innerHTML;
+        console.log(msg);
+      };
+
       const startButton = document.getElementById('startButton');
       const syncBtn = document.getElementById('syncButton');
-      const overlay = document.getElementById('overlay');
       const sky = document.querySelector('#sky');
-      const camera = document.querySelector('a-camera');
-      const polarisSphere = document.querySelector('#polarstern-sphere');
-      const polarText = document.querySelector('#polarText');
-      const oraclePanel = document.querySelector('#oracle-panel');
-
-      let currentAct = 0; 
+      const camera = document.querySelector('#mainCam');
+      let currentAct = 0;
 
       startButton.addEventListener('click', function() {
+        log("Start geklickt...");
+        
+        // iOS Sensoren-Check
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-          DeviceOrientationEvent.requestPermission().then(state => { if (state === 'granted') initPerformance(); });
-        } else { initPerformance(); }
+          DeviceOrientationEvent.requestPermission()
+            .then(state => {
+              log("Sensor-Status: " + state);
+              if (state === 'granted') startApp();
+              else alert("Sensoren wurden abgelehnt!");
+            })
+            .catch(e => log("Fehler: " + e));
+        } else {
+          log("Kein iOS-Sensor-Dialog nötig.");
+          startApp();
+        }
       });
 
-      function initPerformance() {
-        overlay.style.display = 'none';
+      function startApp() {
+        document.getElementById('overlay').style.display = 'none';
         syncBtn.style.display = 'block';
-
-        const performSync = () => {
-          let currentRot = camera.getAttribute('rotation');
-          let imagePolarisY = -70.15; 
-          let imagePolarisX = 48.16;
-
-          let targetY = currentRot.y - imagePolarisY;
-          let rawX = currentRot.x - imagePolarisX;
-          let clampedX = Math.max(-30, Math.min(30, rawX));
-
-          if (currentAct === 0) {
-            // ÜBERGANG AKT 0 -> AKT 1 (Dunkelheit zu Sternen)
-            sky.setAttribute('rotation', { x: clampedX, y: targetY, z: 0 });
-            sky.removeAttribute('color'); // WICHTIG: Farbe entfernen!
-            sky.setAttribute('src', '#skyClean');
-            
-            syncBtn.innerText = "STERNBILDER ENTHÜLLEN";
-            syncBtn.style.background = "rgba(0, 212, 255, 0.8)";
-            currentAct = 1;
-            console.log("Akt 1 aktiviert: Sterne sichtbar");
-
-          } else if (currentAct === 1) {
-            // ÜBERGANG AKT 1 -> AKT 2 (Sterne zu Linien)
-            sky.setAttribute('src', '#skyLines');
-            polarisSphere.setAttribute('visible', 'true');
-            polarText.setAttribute('visible', 'true');
-            
-            syncBtn.innerText = "HIMMEL NEU JUSTIEREN";
-            syncBtn.style.background = "rgba(255, 255, 255, 0.2)";
-            currentAct = 2;
-            console.log("Akt 2 aktiviert: Linien sichtbar");
-
-          } else {
-            // Nur noch Re-Sync (Falls man sich bewegt hat)
-            sky.setAttribute('rotation', { x: clampedX, y: targetY, z: 0 });
-            console.log("Re-Sync durchgeführt");
-          }
-        };
-
-        syncBtn.addEventListener('click', performSync);
-
-        // Fadenkreuz-Interaktion (nur in Akt 2 möglich)
-        polarisSphere.addEventListener('click', function() {
-          if (currentAct === 2) {
-            oraclePanel.setAttribute('visible', 'true');
-            polarisSphere.setAttribute('color', 'white');
-            setTimeout(() => {
-              oraclePanel.setAttribute('visible', 'false');
-              polarisSphere.setAttribute('color', '#00d4ff');
-            }, 10000);
-          }
-        });
+        log("App gestartet. Akt 0 aktiv.");
       }
+
+      syncBtn.addEventListener('click', function() {
+        log("Sync gedrückt! Akt: " + currentAct);
+        
+        // Wir nutzen hier die stabilere Methode über object3D
+        let rot = camera.getAttribute('rotation');
+        log("Blickwinkel: Y=" + rot.y.toFixed(2));
+
+        let imagePolarisY = -70.15; 
+        let targetY = rot.y - imagePolarisY;
+
+        if (currentAct === 0) {
+          log("Wechsel zu Akt 1...");
+          sky.setAttribute('src', '#skyClean');
+          sky.setAttribute('color', '#fff'); // Weiß macht die Textur sichtbar
+          document.getElementById('debugDots').setAttribute('visible', 'false');
+          syncBtn.innerText = "LINIEN ENTHÜLLEN";
+          currentAct = 1;
+        } 
+        else if (currentAct === 1) {
+          log("Wechsel zu Akt 2...");
+          sky.setAttribute('src', '#skyLines');
+          document.getElementById('polarstern-sphere').setAttribute('visible', 'true');
+          syncBtn.innerText = "NEU AUSRICHTEN";
+          currentAct = 2;
+        }
+
+        // Rotation immer anwenden
+        sky.setAttribute('rotation', {x: 0, y: targetY, z: 0});
+      });
     </script>
   </body>
 </html>
