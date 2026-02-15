@@ -33,26 +33,17 @@
 
       <a-sky id="sky" src="#skyTexture" rotation="0 0 0">
         
-        <a-entity id="polarstern-anchor" rotation="-46.44 197.14 0">
-          
-          <a-sphere 
-            id="polarstern-sphere"
-            class="interaktiv"
-            position="0 0 -20" 
-            radius="0.2" 
-            color="#00d4ff" 
-            material="emissive: #00d4ff; emissiveIntensity: 8">
-          </a-sphere>
-          <a-text value="POLARIS" position="0 1.2 -20" align="center" width="6" color="#00d4ff"></a-text>
-
-          <a-entity id="oracle-panel" position="0 4 -20" visible="false">
-            <a-plane width="8" height="3" color="#000" opacity="0.9"></a-plane>
-            <a-text 
-              value="Der Polarstern wurde oft als 'Stern der Freiheit' bezeichnet, da er versklavten Menschen den Weg nach Norden wies." 
-              align="center" width="7" color="white">
-            </a-text>
-          </a-entity>
-        </a-entity>
+<a-entity id="polarstern-anchor" rotation="48.16 -70.15 0">
+  <a-sphere 
+    id="polarstern-sphere"
+    class="interaktiv"
+    position="0 0 -20" 
+    radius="0.25" 
+    color="#00d4ff" 
+    material="emissive: #00d4ff; emissiveIntensity: 8">
+  </a-sphere>
+  <a-text value="POLARIS" position="0 1.2 -20" align="center" width="6" color="#00d4ff"></a-text>
+  </a-entity>
       </a-sky>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true">
