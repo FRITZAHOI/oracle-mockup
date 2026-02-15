@@ -2,13 +2,14 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Test</title>
+    <title>Oracle du Ciel - Mockup</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
+      /* Das Overlay, das wir am Anfang wegklicken müssen */
       #overlay {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.8);
+        background: #000; /* Schwarz */
         color: white;
         display: flex;
         flex-direction: column;
@@ -20,10 +21,10 @@
       button {
         padding: 20px 40px;
         font-size: 20px;
-        background: #444;
+        background: #222;
         color: white;
         border: 2px solid white;
-        cursor: pointer;
+        border-radius: 10px;
       }
     </style>
   </head>
@@ -31,19 +32,21 @@
 
     <div id="overlay">
       <h1>Oracle du Ciel</h1>
-      <p>Blicke in die Sterne</p>
+      <p>Bereit für die Sterne?</p>
       <button id="startButton">Performance starten</button>
     </div>
 
-   <a-sky src="https://cdn.aframe.io/360-guide/beach/puydesancy.jpg" rotation="0 -90 0"></a-sky>
-      <a-entity position="0 2 -10">
-        <a-sphere radius="0.5" color="yellow" 
-                  animation="property: scale; to: 1.5 1.5 1.5; dir: alternate; dur: 2000; loop: true">
-        </a-sphere>
-        <a-text value="Orion" align="center" position="0 1 0"></a-text>
-      </a-entity>
+    <a-scene>
+      <a-assets>
+        <img id="skyTexture" src="stars.jpg">
+      </a-assets>
 
-      <a-sphere id="satellites" radius="50" material="color: cyan; wireframe: true; opacity: 0.2; side: back" visible="false"></a-sphere>
+      <a-sky src="#skyTexture" rotation="0 -90 0"></a-sky>
+
+      <a-entity position="5 2 -15">
+        <a-sphere radius="0.5" color="yellow"></a-sphere>
+        <a-text value="Orion" align="center" position="0 1 0" width="10"></a-text>
+      </a-entity>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true"></a-camera>
     </a-scene>
@@ -51,28 +54,23 @@
     <script>
       const startButton = document.getElementById('startButton');
       const overlay = document.getElementById('overlay');
-      const satLayer = document.querySelector('#satellites');
 
       startButton.addEventListener('click', function() {
-        // 1. Audio-Kontext und Sensoren freischalten
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        // Berechtigungen für iPad Sensoren abfragen
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
           DeviceOrientationEvent.requestPermission()
             .then(permissionState => {
               if (permissionState === 'granted') {
                 overlay.style.display = 'none';
               }
             })
-            .catch(console.error);
+            .catch(err => {
+              alert("Sensoren wurden blockiert.");
+              overlay.style.display = 'none';
+            });
         } else {
-          // Für Geräte, die keine explizite Abfrage brauchen (Android/Ältere iOS)
+          // Für Browser, die nicht fragen müssen (Laptop/Android)
           overlay.style.display = 'none';
-        }
-      });
-
-      // Simulation der Fernsteuerung via Tastatur am Laptop für dich zum Testen:
-      window.addEventListener('keydown', (e) => {
-        if(e.key === 's') { // Drücke 's' um Satelliten zu zeigen
-          satLayer.setAttribute('visible', !satLayer.getAttribute('visible'));
         }
       });
     </script>
