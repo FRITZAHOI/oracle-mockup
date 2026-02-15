@@ -5,11 +5,10 @@
     <title>Oracle du Ciel - Mockup</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
-      /* Das Overlay, das wir am Anfang wegklicken müssen */
       #overlay {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background: #000; /* Schwarz */
+        background: #000;
         color: white;
         display: flex;
         flex-direction: column;
@@ -35,9 +34,10 @@
       <p>Blick in die Sterne</p>
       <button id="startButton">Starten</button>
     </div>
-    <button id="syncButton" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; padding: 10px; background: rgba(255,255,255,0.3); color: white; border: 1px solid white; display: none;">
-  Polaris hier festpinnen
-</button>
+
+    <button id="syncButton" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; padding: 15px; background: rgba(0,0,0,0.6); color: white; border: 2px solid white; border-radius: 10px; display: none;">
+      POLARIS HIER FIXIEREN
+    </button>
 
     <a-scene>
       <a-assets>
@@ -45,103 +45,115 @@
       </a-assets>
 
       <a-sky src="#skyTexture" rotation="0 -90 0"></a-sky>
-<a-entity id="polarstern-anchor" rotation="-47.5 198.5 0">
-  <a-sphere 
-    class="interaktiv"
-    position="0 0 -20" 
-    radius="0.5" 
-    color="white" 
-    material="emissive: #fff; emissiveIntensity: 2">
-  </a-sphere>
-  <a-text value="POLARIS" position="0 1.5 -20" align="center" width="10"></a-text>
-</a-entity>
 
-    <a-camera look-controls="magicWindowTrackingEnabled: true">
-  <a-cursor 
-    id="cursor"
-    animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
-    animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
-    raycaster="objects: .interaktiv"
-    color="white">
-  </a-cursor>
-</a-camera>
+      <a-entity id="polarstern-anchor" rotation="-47.5 198.5 0">
+        <a-sphere 
+          id="polarstern-sphere"
+          class="interaktiv"
+          position="0 0 -20" 
+          radius="0.5" 
+          color="white" 
+          material="emissive: #fff; emissiveIntensity: 2">
+        </a-sphere>
+        <a-text value="POLARIS" position="0 1.5 -20" align="center" width="10"></a-text>
+
+        <a-entity id="oracle-panel" position="0 4 -20" visible="false">
+          <a-plane width="8" height="3" color="#000" opacity="0.8"></a-plane>
+          <a-text 
+            id="oracle-text"
+            value="Der Polarstern wurde oft als 'Stern der Freiheit' bezeichnet, da er versklavten Menschen den Weg nach Norden wies." 
+            align="center" 
+            width="7" 
+            color="white">
+          </a-text>
+        </a-entity>
+      </a-entity>
+
+      <a-camera look-controls="magicWindowTrackingEnabled: true">
+        <a-cursor 
+          id="cursor"
+          animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+          animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
+          raycaster="objects: .interaktiv"
+          color="white">
+        </a-cursor>
+      </a-camera>
     </a-scene>
 
-   <script>
-  const startButton = document.getElementById('startButton');
-  const overlay = document.getElementById('overlay');
-  const sky = document.querySelector('a-sky');
-  const camera = document.querySelector('a-camera');
+    <script>
+      const startButton = document.getElementById('startButton');
+      const overlay = document.getElementById('overlay');
+      const sky = document.querySelector('a-sky');
+      const camera = document.querySelector('a-camera');
 
-  // Wir erstellen ein kleines Textfeld für die Koordinaten-Anzeige
-  const debugText = document.createElement('div');
-  debugText.style.position = 'fixed';
-  debugText.style.top = '10px';
-  debugText.style.left = '10px';
-  debugText.style.background = 'rgba(0,0,0,0.5)';
-  debugText.style.color = 'lime';
-  debugText.style.padding = '5px';
-  debugText.style.fontFamily = 'monospace';
-  debugText.style.zIndex = '10000';
-  debugText.style.display = 'none'; // Erstmal unsichtbar
-  document.body.appendChild(debugText);
+      const debugText = document.createElement('div');
+      debugText.style.position = 'fixed';
+      debugText.style.top = '10px';
+      debugText.style.left = '10px';
+      debugText.style.background = 'rgba(0,0,0,0.5)';
+      debugText.style.color = 'lime';
+      debugText.style.padding = '5px';
+      debugText.style.fontFamily = 'monospace';
+      debugText.style.zIndex = '10000';
+      debugText.style.display = 'none';
+      document.body.appendChild(debugText);
 
-  startButton.addEventListener('click', function() {
-    // 1. Sensoren-Berechtigung (iOS)
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-      DeviceOrientationEvent.requestPermission()
-        .then(permissionState => {
-          if (permissionState === 'granted') {
-            initPerformance();
+      startButton.addEventListener('click', function() {
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+          DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+              if (permissionState === 'granted') {
+                initPerformance();
+              }
+            })
+            .catch(console.error);
+        } else {
+          initPerformance();
+        }
+      });
+
+      function initPerformance() {
+        overlay.style.display = 'none';
+        debugText.style.display = 'block';
+        const syncBtn = document.getElementById('syncButton');
+        syncBtn.style.display = 'block';
+
+        window.addEventListener('deviceorientationabsolute', function(event) {
+          let compass = event.webkitCompassHeading || event.alpha;
+          if (compass) {
+            sky.setAttribute('rotation', `0 ${-compass} 0`);
           }
-        })
-        .catch(console.error);
-    } else {
-      initPerformance();
-    }
-  });
+        }, { once: true });
 
-function initPerformance() {
-  overlay.style.display = 'none';
-  debugText.style.display = 'block';
-  
-  const syncBtn = document.getElementById('syncButton');
-  syncBtn.style.display = 'block'; // Den Button jetzt sichtbar machen
+        setInterval(() => {
+          let rot = camera.getAttribute('rotation');
+          debugText.innerHTML = `BLICKWINKEL:<br>X: ${rot.x.toFixed(2)} | Y: ${rot.y.toFixed(2)}<br><br>Ziele auf Polaris und drücke den Button!`;
+        }, 100);
 
-  // 1. Initialer Kompass-Check
-  window.addEventListener('deviceorientationabsolute', function(event) {
-    let compass = event.webkitCompassHeading || event.alpha;
-    if (compass) {
-      sky.setAttribute('rotation', `0 ${-compass} 0`);
-    }
-  }, { once: true });
+        const performSync = () => {
+          let currentRot = camera.getAttribute('rotation');
+          document.querySelector('#polarstern-anchor').setAttribute('rotation', `${-currentRot.x} ${-currentRot.y} 0`);
+          syncBtn.style.background = "green";
+          setTimeout(() => { syncBtn.style.background = "rgba(0,0,0,0.6)"; }, 500);
+        };
 
-  // 2. Das Messgerät-Update (läuft ständig im Hintergrund)
-  setInterval(() => {
-    let rot = camera.getAttribute('rotation');
-    debugText.innerHTML = `BLICKWINKEL:<br>X: ${rot.x.toFixed(2)} | Y: ${rot.y.toFixed(2)}<br><br>Ziele auf Polaris und drücke den Button!`;
-  }, 100);
+        window.addEventListener('keydown', (e) => { if(e.key === 'c' || e.key === 'C') performSync(); });
+        syncBtn.addEventListener('click', performSync);
 
-  // 3. Die eigentliche Sync-Funktion
-  const performSync = () => {
-    let currentRot = camera.getAttribute('rotation');
-    // Wir setzen den Anker genau dorthin, wo die Kamera gerade hinschaut
-    // Wir invertieren die Werte, damit der Anker im Raum "stehenbleibt"
-    document.querySelector('#polarstern-anchor').setAttribute('rotation', `${-currentRot.x} ${-currentRot.y} 0`);
-    
-    // Kleines visuelles Feedback: Button blinkt kurz grün
-    syncBtn.style.background = "green";
-    setTimeout(() => { syncBtn.style.background = "rgba(0,0,0,0.6)"; }, 500);
-    
-    console.log("Kalibriert auf X:", -currentRot.x, "Y:", -currentRot.y);
-  };
+        // Orakel-Logik
+        const polarisSphere = document.querySelector('#polarstern-sphere');
+        const oraclePanel = document.querySelector('#oracle-panel');
 
-  // 4. Auslöser für Laptop (Taste C) und iPad (Button Klick)
-  window.addEventListener('keydown', (e) => { if(e.key === 'c' || e.key === 'C') performSync(); });
-// 4. Auslöser für Laptop (Taste C) und iPad (Button Klick)
-  window.addEventListener('keydown', (e) => { if(e.key === 'c' || e.key === 'C') performSync(); });
-  syncBtn.addEventListener('click', performSync);
-} // <--- Diese eine Klammer schließt "initPerformance"
-</script>
+        polarisSphere.addEventListener('click', function() {
+          oraclePanel.setAttribute('visible', 'true');
+          polarisSphere.setAttribute('color', 'springgreen');
+          
+          setTimeout(() => {
+            oraclePanel.setAttribute('visible', 'false');
+            polarisSphere.setAttribute('color', 'white');
+          }, 8000);
+        });
+      }
+    </script>
   </body>
 </html>
