@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Royal Blue Edition</title>
+    <title>Oracle du Ciel - Deep Royal Blue</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -46,7 +46,7 @@
           radius="0.8" 
           color="#0065b8" 
           visible="false"
-          material="emissive: #0065b8; emissiveIntensity: 2">
+          material="emissive: #0065b8; emissiveIntensity: 0.8; shader: flat">
         </a-sphere>
 
         <a-text 
@@ -98,17 +98,15 @@
         let rot = cam.getAttribute('rotation');
         
         if (currentAct === 0) {
-          // KORREKTUR: Wir rechnen die 45° Verschiebung des Bildes hier ein
-          let imagePolarisY = 45; // Falls es in die andere Richtung verschoben ist, nimm -45
+          // RICHTUNGSWECHSEL: Hier war der Fehler. Wir probieren es mit -45 oder -135 
+          // (je nachdem wie das Foto aufgenommen wurde).
+          let imagePolarisY = -45; 
           let targetY = rot.y - imagePolarisY;
           
           sky.removeAttribute('color');
           sky.setAttribute('material', { src: '#skyClean', shader: 'flat' });
           
-          // Himmel drehen (um den Stern im Bild auszurichten)
           sky.setAttribute('rotation', {x: 0, y: targetY, z: 0});
-          
-          // Die Kugel-Gruppe wird auf die aktuelle Blickrichtung des Users gesetzt
           anchor.setAttribute('rotation', {x: 0, y: rot.y, z: 0});
 
           syncBtn.innerText = "Milchstraße suchen & klicken";
