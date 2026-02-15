@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Deep Royal Blue</title>
+    <title>Oracle du Ciel - Precision Calibration</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -38,7 +38,6 @@
       <a-sky id="sky" color="#000"></a-sky>
 
       <a-entity id="polarstern-anchor">
-        
         <a-sphere 
           id="polarstern-sphere" 
           class="interaktiv" 
@@ -46,7 +45,7 @@
           radius="0.8" 
           color="#0065b8" 
           visible="false"
-          material="emissive: #0065b8; emissiveIntensity: 0.8; shader: flat">
+          material="emissive: #0065b8; emissiveIntensity: 0.5; shader: flat">
         </a-sphere>
 
         <a-text 
@@ -98,16 +97,21 @@
         let rot = cam.getAttribute('rotation');
         
         if (currentAct === 0) {
-          // RICHTUNGSWECHSEL: Hier war der Fehler. Wir probieren es mit -45 oder -135 
-          // (je nachdem wie das Foto aufgenommen wurde).
-          let imagePolarisY = -45; 
+          // --- FEIN-JUSTIERUNG ---
+          let imagePolarisY = -140; // 5 Grad weiter zurück als -135
+          let imagePolarisX = 5;    // 5 Grad Neigung nach unten
+          
           let targetY = rot.y - imagePolarisY;
+          let targetX = rot.x - imagePolarisX;
           
           sky.removeAttribute('color');
           sky.setAttribute('material', { src: '#skyClean', shader: 'flat' });
           
-          sky.setAttribute('rotation', {x: 0, y: targetY, z: 0});
-          anchor.setAttribute('rotation', {x: 0, y: rot.y, z: 0});
+          // Wir setzen die Rotation jetzt auf beiden Achsen
+          sky.setAttribute('rotation', {x: targetX, y: targetY, z: 0});
+          
+          // Die Kugel-Gruppe folgt der Blickrichtung des Users (X und Y fixiert)
+          anchor.setAttribute('rotation', {x: rot.x, y: rot.y, z: 0});
 
           syncBtn.innerText = "Milchstraße suchen & klicken";
           currentAct = 1;
