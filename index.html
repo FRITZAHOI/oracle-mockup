@@ -79,28 +79,21 @@
         debugText.style.display = 'block';
         syncBtn.style.display = 'block';
 
-        const performSync = () => {
-          let currentRot = camera.getAttribute('rotation');
-          
-          // Wir wissen: Polaris klebt bei Y = 197.14 auf dem Foto
-          let imagePolarisY = 197.14; 
+     const performSync = () => {
+  let currentRot = camera.getAttribute('rotation');
+  
+  // DEINE NEUEN BILD-KOORDINATEN
+  let imagePolarisY = -70.15; 
+  let imagePolarisX = 48.16; // Wir halten X im Sky meist auf 0, aber nutzen es hier zur Berechnung
 
-          // Wir berechnen, wie weit wir den Himmel drehen müssen
-          // Delta Y = Blick - BildPosition
-          let targetY = currentRot.y - imagePolarisY;
+  // Wir berechnen die Drehung
+  let targetY = currentRot.y - imagePolarisY;
+  
+  // Wir drehen den Himmel nur horizontal (Y), damit er nicht kippt
+  sky.setAttribute('rotation', { x: 0, y: targetY, z: 0 });
 
-          // Wir drehen nur Y, um den Horizont stabil zu halten
-          sky.setAttribute('rotation', { x: 0, y: targetY, z: 0 });
-
-          syncBtn.style.background = "#00d4ff";
-          syncBtn.style.color = "#000";
-          syncBtn.innerText = "WELT JUSTIERT!";
-          setTimeout(() => { 
-            syncBtn.style.background = "rgba(0,0,0,0.6)"; 
-            syncBtn.style.color = "white";
-            syncBtn.innerText = "POLARIS HIER FIXIEREN";
-          }, 1000);
-        };
+  // ... Feedback-Logik ...
+};
 
         syncBtn.addEventListener('click', performSync);
         
