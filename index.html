@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Final Calibration</title>
+    <title>Oracle du Ciel - Horizon Fix</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -76,7 +76,6 @@
       const voice = document.getElementById('oracleVoice');
       let currentAct = 0;
 
-      // Lade-Event
       document.querySelector('a-assets').addEventListener('loaded', () => {
         document.getElementById('statusText').innerText = "Das Orakel ist bereit.";
         document.getElementById('startButton').style.display = "block";
@@ -98,18 +97,22 @@
         let rot = cam.getAttribute('rotation');
         
         if (currentAct === 0) {
-          // --- DIE LETZTEN FEINSCHLIFFE ---
-          let imagePolarisY = -138; // Seitlich (X-Achse im User-Feedback)
-          let imagePolarisX = 2;    // Höhe (Y-Achse im User-Feedback) - um 2° reduziert für Aufwärtsbewegung
+          // --- KALIBRIERUNG ---
+          let imagePolarisY = -140; // Zurück auf alten Horizontal-Wert
+          let imagePolarisX = 1;    // 1° höher als vorher
+          let imagePolarisZ = 0;    // Standardwert für Tilt
           
           let targetY = rot.y - imagePolarisY;
           let targetX = rot.x - imagePolarisX;
+          // Wir übernehmen die Z-Rotation (Neigung) des iPads, um den Horizont zu begradigen
+          let targetZ = rot.z - imagePolarisZ; 
           
           sky.removeAttribute('color');
           sky.setAttribute('material', { src: '#skyClean', shader: 'flat' });
           
-          sky.setAttribute('rotation', {x: targetX, y: targetY, z: 0});
-          anchor.setAttribute('rotation', {x: rot.x, y: rot.y, z: 0});
+          // Rotation auf allen 3 Achsen anwenden
+          sky.setAttribute('rotation', {x: targetX, y: targetY, z: targetZ});
+          anchor.setAttribute('rotation', {x: rot.x, y: rot.y, z: rot.z});
 
           syncBtn.innerText = "Milchstraße suchen & klicken";
           currentAct = 1;
