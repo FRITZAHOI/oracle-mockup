@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Oracle du Ciel - Master Blue</title>
+    <title>Oracle du Ciel - Stable Horizon</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
       #overlay {
@@ -38,11 +38,11 @@
             id="polarstern-sphere"
             class="interaktiv"
             position="0 0 -20" 
-            radius="0.02" 
+            radius="0.15" 
             color="#00d4ff" 
-            material="emissive: #00d4ff; emissiveIntensity: 5">
+            material="emissive: #00d4ff; emissiveIntensity: 10">
           </a-sphere>
-          <a-text value="POLARIS" position="0 0.4 -20" align="center" width="4" color="#00d4ff"></a-text>
+          <a-text value="POLARIS" position="0 0.8 -20" align="center" width="6" color="#00d4ff"></a-text>
 
           <a-entity id="oracle-panel" position="0 4 -20" visible="false">
             <a-plane width="8" height="3" color="#000" opacity="0.9"></a-plane>
@@ -87,24 +87,21 @@
         syncBtn.style.display = 'block';
 
         const performSync = () => {
-          // Wir holen die Rotation der Kamera (Blick des iPad)
           let currentRot = camera.getAttribute('rotation');
           
-          // Bild-Koordinaten von Polaris (Referenz auf der stars.jpg)
+          // Wir holen uns die Bild-Position
           let imagePolarisY = 197.14; 
-          let imagePolarisX = -46.44;
 
-          // BERECHNUNG: Wir setzen die Rotation des Himmels ABSOLUT neu.
-          // Wir ziehen die Bild-Position von unserem aktuellen Blick ab.
+          // WICHTIG: Wir berechnen NUR die Y-Rotation (Horizontale Drehung)
+          // So bleibt der Himmel immer "aufrecht" stehen.
           let targetY = currentRot.y - imagePolarisY;
-          let targetX = currentRot.x - imagePolarisX;
 
-          // Wichtig: Wir überschreiben die alte Rotation komplett (kein += oder so)
-          sky.setAttribute('rotation', { x: targetX, y: targetY, z: 0 });
+          // Wir setzen X fest auf 0, damit nichts kippt
+          sky.setAttribute('rotation', { x: 0, y: targetY, z: 0 });
 
           syncBtn.style.background = "#00d4ff";
           syncBtn.style.color = "#000";
-          syncBtn.innerText = "HIMMEL KALIBRIERT!";
+          syncBtn.innerText = "HIMMEL JUSTIERT!";
           setTimeout(() => { 
             syncBtn.style.background = "rgba(0,0,0,0.6)"; 
             syncBtn.style.color = "white";
@@ -117,7 +114,7 @@
 
         polarisSphere.addEventListener('click', function() {
           oraclePanel.setAttribute('visible', 'true');
-          polarisSphere.setAttribute('color', 'white'); // Blinkt kurz weiß auf
+          polarisSphere.setAttribute('color', 'white');
           setTimeout(() => {
             oraclePanel.setAttribute('visible', 'false');
             polarisSphere.setAttribute('color', '#00d4ff');
@@ -126,7 +123,7 @@
 
         setInterval(() => {
           let rot = camera.getAttribute('rotation');
-          if(rot) debugText.innerHTML = `DEIN BLICK:<br>X: ${rot.x.toFixed(2)} | Y: ${rot.y.toFixed(2)}`;
+          if(rot) debugText.innerHTML = `BLICK:<br>X: ${rot.x.toFixed(2)} | Y: ${rot.y.toFixed(2)}`;
         }, 100);
       }
     </script>
