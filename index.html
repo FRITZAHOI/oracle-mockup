@@ -54,31 +54,14 @@
         <img id="skyTexture" src="stars.jpg">
       </a-assets>
 
-      <a-sky id="sky" src="#skyTexture" rotation="0 -90 0">
-        
-        <a-entity id="polarstern-anchor" rotation="-46.44 197.14 0">
-          <a-sphere 
-            id="polarstern-sphere"
-            class="interaktiv"
-            position="0 0 -20" 
-            radius="0.5" 
-            color="white" 
-            material="emissive: #fff; emissiveIntensity: 2">
-          </a-sphere>
-          <a-text value="POLARIS" position="0 1.5 -20" align="center" width="10"></a-text>
-
-          <a-entity id="oracle-panel" position="0 4 -20" visible="false">
-            <a-plane width="8" height="3" color="#000" opacity="0.8"></a-plane>
-            <a-text 
-              id="oracle-text"
-              value="Der Polarstern wurde oft als 'Stern der Freiheit' bezeichnet, da er versklavten Menschen den Weg nach Norden wies." 
-              align="center" 
-              width="7" 
-              color="white">
-            </a-text>
-          </a-entity>
-        </a-entity>
-      </a-sky>
+     <a-sky id="sky" src="#skyTexture" rotation="0 0 0">
+  
+  <a-entity id="polarstern-anchor" rotation="-46.44 197.14 0">
+    <a-sphere id="polarstern-sphere" class="interaktiv" ...></a-sphere>
+    <a-text value="POLARIS" ...></a-text>
+    ...
+  </a-entity>
+</a-sky>
 
       <a-camera look-controls="magicWindowTrackingEnabled: true">
         <a-cursor 
@@ -124,28 +107,36 @@
         syncBtn.style.display = 'block';
 
         // 2. MASTER SYNC (Welt drehen)
-        const performSync = () => {
-          let currentRot = camera.getAttribute('rotation');
-          
-          // Bild-Koordinaten von Polaris
-          let imagePolarisY = 197.14; 
-          let imagePolarisX = -46.44;
+const performSync = () => {
+  // 1. Wo schaust du in der ECHTEN Welt gerade hin? (iPad-Blick)
+  let currentRot = camera.getAttribute('rotation');
+  
+  // 2. Wo liegt Polaris auf deinem FOTO? (Deine Messwerte von vorhin)
+  // WICHTIG: Diese Werte müssen exakt zu dem Bild passen!
+  let imagePolarisY = 197.14; 
+  let imagePolarisX = -46.44;
 
-          // Wir berechnen die nötige Drehung für den Himmel
-          let newSkyRotY = currentRot.y - imagePolarisY;
-          // Für X (Höhe) ist es oft besser, es im Mockup bei 0 zu lassen, 
-          // aber wir können es optional mitdrehen:
-          let newSkyRotX = currentRot.x - imagePolarisX;
+  // 3. Die magische Berechnung:
+  // "Neue Himmel-Drehung = Mein Blick - Position im Bild"
+  let newSkyRotY = currentRot.y - imagePolarisY;
+  let newSkyRotX = currentRot.x - imagePolarisX;
 
-          sky.setAttribute('rotation', `0 ${newSkyRotY} 0`);
+  // 4. Wir drehen den gesamten Himmel. 
+  // Da der Anker IM Himmel ist, dreht er sich perfekt mit!
+  sky.setAttribute('rotation', {
+    x: newSkyRotX, 
+    y: newSkyRotY, 
+    z: 0
+  });
 
-          syncBtn.style.background = "green";
-          syncBtn.innerText = "WELT KALIBRIERT!";
-          setTimeout(() => { 
-            syncBtn.style.background = "rgba(0,0,0,0.6)"; 
-            syncBtn.innerText = "POLARIS HIER FIXIEREN";
-          }, 1000);
-        };
+  // Feedback
+  syncBtn.style.background = "green";
+  syncBtn.innerText = "HIMMEL JUSTIERT!";
+  setTimeout(() => { 
+    syncBtn.style.background = "rgba(0,0,0,0.6)"; 
+    syncBtn.innerText = "POLARIS HIER FIXIEREN";
+  }, 1000);
+};
 
         syncBtn.addEventListener('click', performSync);
         window.addEventListener('keydown', (e) => { if(e.key.toLowerCase() === 'c') performSync(); });
